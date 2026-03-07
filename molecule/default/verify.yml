@@ -4,10 +4,14 @@
   hosts: all
   gather_facts: false
   become: true
+  vars:
+    expected_logdy_user: logdy
+    expected_logdy_group: logdy
   tasks:
-    ## テストの前処理
-    - name: Gather package facts
-      ansible.builtin.package_facts:
+    # Collect runtime facts used by assertions.
+    - name: Load role default variables
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
     - name: Gather service facts
       ansible.builtin.service_facts:
     - name: Gather listen ports facts
@@ -22,67 +26,62 @@
       ansible.builtin.set_fact:
         registered_users: "{{ ansible_facts.getent_passwd }}"
         registered_groups: "{{ ansible_facts.getent_group }}"
-        listen_tcp_posts: "{{ ansible_facts.tcp_listen | map(attribute='port') | unique | sort | list }}"
-        listen_udp_posts: "{{ ansible_facts.udp_listen | map(attribute='port') | unique | sort | list }}"
-    ## リポジトリのテスト
-    # - name: Test repository
-    #   block:
-    #     - name: Check apt source setting
-    #       ansible.builtin.stat:
-    #         path: /etc/apt/sources.list.d/package.sources
-    #       register: repo_result
-    #     - name: Assert file
-    #       ansible.builtin.assert:
-    #         that:
-    #           - repo_result.stat.exists
-    # ## パッケージのテスト
-    # - name: Assert package
-    #   ansible.builtin.assert:
-    #     that:
-    #       - ansible_facts.packages['package'] is defined
-    # ## ユーザーのテスト
-    # - name: Test user
-    #   block:
-    #     - name: Assert user
-    #       ansible.builtin.assert:
-    #         that:
-    #           - registered_users['www-data'] is not changed
-    # ## グループのテスト
-    # - name: Test group
-    #   block:
-    #     - name: Assert group
-    #       ansible.builtin.assert:
-    #         that:
-    #           - registered_groups['www-data'] is not changed
-    # ## ファイルのテスト
-    # - name: Test file
-    #   block:
-    #     - name: Check virtual host setting
-    #       ansible.builtin.stat:
-    #         path: /etc/apache2/sites-available/default
-    #       register: result
-    #     - name: Assert file
-    #       ansible.builtin.assert:
-    #         that:
-    #           - result.stat.exists
-    #     - name: Check virtual host enabled
-    #       ansible.builtin.stat:
-    #         path: /etc/apache2/sites-enabled/default
-    #       register: result
-    #     - name: Assert file
-    #       ansible.builtin.assert:
-    #         that:
-    #           - result.stat.exists
-    #           - result.stat.lnk_source == '/etc/apache2/sites-available/default'
-    ## サービスのテスト
-    # - name: Assert service
-    #   ansible.builtin.assert:
-    #     that:
-    #       - ansible_facts.services['package.service'] is defined
-    #       - ansible_facts.services['package.service']['state'] == 'running'
-    #       - ansible_facts.services['package.service']['status'] == 'enabled'
-    # ## 待受ポートのテスト
-    # - name: Assert listen port
-    #   ansible.builtin.assert:
-    #     that:
-    #       - 123456 in listen_tcp_posts
+        listen_tcp_ports: "{{ ansible_facts.tcp_listen | default([]) | map(attribute='port') | unique | sort | list }}"
+    - name: Assert logdy group exists
+      ansible.builtin.assert:
+        that:
+          - registered_groups[expected_logdy_group] is defined
+    - name: Assert logdy user exists
+      ansible.builtin.assert:
+        that:
+          - registered_users[expected_logdy_user] is defined
+    - name: Check logdy binary
+      ansible.builtin.stat:
+        path: /usr/local/bin/logdy
+      register: logdy_binary
+    - name: Assert logdy binary is installed and executable
+      ansible.builtin.assert:
+        that:
+          - logdy_binary.stat.exists
+          - logdy_binary.stat.isreg
+          - logdy_binary.stat.executable
+    - name: Check environment file
+      ansible.builtin.stat:
+        path: /etc/default/logdy
+      register: logdy_env_file
+    - name: Assert environment file exists
+      ansible.builtin.assert:
+        that:
+          - logdy_env_file.stat.exists
+          - logdy_env_file.stat.isreg
+    - name: Check systemd unit file
+      ansible.builtin.stat:
+        path: /lib/systemd/system/logdy.service
+      register: logdy_service_unit
+    - name: Assert systemd unit file exists
+      ansible.builtin.assert:
+        that:
+          - logdy_service_unit.stat.exists
+          - logdy_service_unit.stat.isreg
+    - name: Read systemd unit file
+      ansible.builtin.slurp:
+        path: /lib/systemd/system/logdy.service
+      register: logdy_service_unit_content
+    - name: Assert systemd unit file content
+      ansible.builtin.assert:
+        that:
+          - "'EnvironmentFile=/etc/default/logdy' in (logdy_service_unit_content.content | b64decode)"
+          - "'ExecStart=/usr/local/bin/logdy' in (logdy_service_unit_content.content | b64decode)"
+          - "('User=' ~ expected_logdy_user) in (logdy_service_unit_content.content | b64decode)"
+          - "('Group=' ~ expected_logdy_group) in (logdy_service_unit_content.content | b64decode)"
+    - name: Assert logdy service is enabled and running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['logdy.service'] is defined
+          - ansible_facts.services['logdy.service'].status == 'enabled'
+          - ansible_facts.services['logdy.service'].state == 'running'
+    - name: Assert logdy listen ports are open
+      ansible.builtin.assert:
+        that:
+          - logdy_listen_port in listen_tcp_ports
+          - logdy_web_port in listen_tcp_ports

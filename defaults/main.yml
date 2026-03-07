@@ -7,7 +7,7 @@ logdy_version: latest
 ## --------------------------
 ## Listenポート
 ## --------------------------
-logdy_listen_port: 8233
+logdy_listen_port: 8123
 
 ## --------------------------
 ## Webポート

@@ -27,10 +27,6 @@
   ansible.builtin.import_tasks:
     file: package.yml
   tags: role_logdy_package
-- name: Import setting task
-  ansible.builtin.import_tasks:
-    file: setting.yml
-  tags: role_logdy_setting
 - name: Import service task
   ansible.builtin.import_tasks:
     file: service.yml
