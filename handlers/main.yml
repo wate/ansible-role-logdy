@@ -1,0 +1,7 @@
+# code: language=ansible
+---
+- name: Restart logdy
+  ansible.builtin.systemd_service:
+    name: logdy
+    state: restarted
+    daemon_reload: true

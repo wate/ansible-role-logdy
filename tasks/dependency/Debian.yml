@@ -1,0 +1,11 @@
+# code: language=ansible
+---
+- name: Add logdy group
+  ansible.builtin.group:
+    name: "{{ logdy_group }}"
+    system: true
+- name: Add logdy user
+  ansible.builtin.user:
+    name: "{{ logdy_user }}"
+    group: "{{ logdy_group }}"
+    system: true
