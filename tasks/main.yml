@@ -19,10 +19,6 @@
     - variable_file is not none
     - variable_file | length > 0
   tags: role_logdy_include_vars
-- name: Import repository task
-  ansible.builtin.import_tasks:
-    file: repository.yml
-  tags: role_logdy_repository
 - name: Import dependency task
   ansible.builtin.import_tasks:
     file: dependency.yml
