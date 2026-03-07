@@ -1,5 +1,11 @@
 # code: language=ansible
 ---
+- name: Create/update environment file
+  ansible.builtin.template:
+    src: environment_file.j2
+    dest: /etc/default/logdy
+    mode: "0644"
+  notify: Restart logdy
 - name: Create/update systemd unit file
   ansible.builtin.template:
     src: logdy.service.j2
@@ -11,9 +17,9 @@
     name: logdy
     state: started
     enabled: true
-# - name: Allow logdy port
-#   community.general.ufw:
-#     rule: allow
-#     port: "{{  logdy_port }} "
-#     from_ip: "{{ logdy_allow_connect_other_host | default('any') }} "
-#   when: logdy_allow_connect_other_host is defined
+- name: Allow logdy port
+  community.general.ufw:
+    rule: allow
+    port: "{{  logdy_port }} "
+    from_ip: "{{ logdy_allow_connect_other_host | default('any') }} "
+  when: logdy_allow_connect_other_host is defined

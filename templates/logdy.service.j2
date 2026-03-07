@@ -4,13 +4,12 @@ After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/default/logdy
 User={{ logdy_user }}
 Group={{ logdy_group }}
-ExecStart=/usr/local/bin/logdy {{ mailpit_cli_args | join(' ') }}
-StandardOutput=journal
-SyslogIdentifier=mailpit
-Restart=always
+EnvironmentFile=/etc/default/logdy
+ExecStart=/usr/local/bin/logdy socket {{ logdy_listen_port }}
+Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

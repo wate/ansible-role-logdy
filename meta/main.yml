@@ -1,8 +1,8 @@
 ---
 galaxy_info:
   role_name: logdy
-  author: your name
-  description: Setup logdy(work in progress)
+  author: yoshiaki tanaka
+  description: Setup logdy
   license: Apache
   min_ansible_version: "2.20"
   platforms:
@@ -10,4 +10,4 @@ galaxy_info:
       versions:
         - trixie
         - bookworm
-ependencies: []
+dependencies: []

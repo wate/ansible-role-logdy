@@ -24,11 +24,14 @@
         logdy_version: "{{ latest_releases.json.tag_name }}"
 - name: Set asset file variable
   ansible.builtin.set_fact:
-    asset_file: logdy_{{ logdy_version[1:] }}_{{ arch_type_maps[ansible_facts['architecture']] }}.deb
+    logdy_download_file: logdy_{{ ansible_facts['system'] | lower }}_{{ arch_type_maps[ansible_facts['architecture']] }}
   vars:
     arch_type_maps:
       x86_64: amd64
       aarch64: arm64
-# - name: Install logdy
-#   ansible.builtin.apt:
-#     deb: https://github.com/{{ logdy_repo }}/releases/download/{{ logdy_version }}/{{ asset_file }}
+- name: Install logdy
+  ansible.builtin.get_url:
+    url: https://github.com/{{ logdy_repo }}/releases/download/{{ logdy_version }}/{{ logdy_download_file }}
+    dest: /usr/local/bin/logdy
+    mode: "0755"
+  notify: Restart logdy
