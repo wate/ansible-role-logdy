@@ -41,19 +41,34 @@ platforms:
     cpus: 1
 provisioner:
   name: ansible
-  # env:
-  #   ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..
+  env:
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..
   options:
     diff: true
   config_options:
     defaults:
       hash_behaviour: merge
-      result_format: yaml
+      callback_result_format: yaml
+    ssh_connection:
+      pipelining: true
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
 # verifier:
 #   name: ansible
 # scenario:
+#   test_sequence:
+#     - dependency
+#     - cleanup
+#     - destroy
+#     - syntax
+#     - create
+#     - prepare
+#     - converge
+#     - idempotence
+#     - side_effect
+#     - verify
+#     - cleanup
+#     - destroy
 #   create_sequence:
 #     - dependency
 #     - create
@@ -74,18 +89,5 @@ provisioner:
 #     - converge
 #   destroy_sequence:
 #     - dependency
-#     - cleanup
-#     - destroy
-#   test_sequence:
-#     - dependency
-#     - cleanup
-#     - destroy
-#     - syntax
-#     - create
-#     - prepare
-#     - converge
-#     - idempotence
-#     - side_effect
-#     - verify
 #     - cleanup
 #     - destroy
