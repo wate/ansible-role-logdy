@@ -6,3 +6,4 @@
     state: "{{ 'restarted' if logdy_service_enabled and logdy_service_state == 'started' else 'stopped' }}"
     enabled: "{{ logdy_service_enabled }}"
     daemon_reload: true
+  when: ansible_facts.service_mgr == 'systemd'
