@@ -1,0 +1,73 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    expected_logdy_user: logdy
+    expected_logdy_group: logdy
+  tasks:
+    - name: Load role default variables
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+    - name: Gather listen ports facts
+      community.general.listen_ports_facts:
+    - name: Gather user facts
+      ansible.builtin.getent:
+        database: passwd
+    - name: Gather group facts
+      ansible.builtin.getent:
+        database: group
+    - name: Set assert variables
+      ansible.builtin.set_fact:
+        registered_users: "{{ ansible_facts.getent_passwd }}"
+        registered_groups: "{{ ansible_facts.getent_group }}"
+        listen_tcp_ports: "{{ ansible_facts.tcp_listen | default([]) | map(attribute='port') | unique | sort | list }}"
+    - name: Assert logdy group exists
+      ansible.builtin.assert:
+        that:
+          - registered_groups[expected_logdy_group] is defined
+    - name: Assert logdy user exists
+      ansible.builtin.assert:
+        that:
+          - registered_users[expected_logdy_user] is defined
+    - name: Check logdy binary
+      ansible.builtin.stat:
+        path: /usr/local/bin/logdy
+      register: logdy_binary
+    - name: Assert logdy binary is installed and executable
+      ansible.builtin.assert:
+        that:
+          - logdy_binary.stat.exists
+          - logdy_binary.stat.isreg
+          - logdy_binary.stat.executable
+    - name: Check environment file
+      ansible.builtin.stat:
+        path: /etc/default/logdy
+      register: logdy_env_file
+    - name: Assert environment file exists
+      ansible.builtin.assert:
+        that:
+          - logdy_env_file.stat.exists
+          - logdy_env_file.stat.isreg
+    - name: Check systemd unit file
+      ansible.builtin.stat:
+        path: /lib/systemd/system/logdy.service
+      register: logdy_service_unit
+    - name: Assert systemd unit file exists
+      ansible.builtin.assert:
+        that:
+          - logdy_service_unit.stat.exists
+          - logdy_service_unit.stat.isreg
+    - name: Assert logdy service is disabled and not running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['logdy.service'] is defined
+          - ansible_facts.services['logdy.service'].status == 'disabled'
+          - ansible_facts.services['logdy.service'].state in ['stopped', 'inactive']
+    - name: Assert logdy listen port is not open
+      ansible.builtin.assert:
+        that:
+          - logdy_listen_port not in listen_tcp_ports

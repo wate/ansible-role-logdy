@@ -17,9 +17,39 @@ logdy_web_port: 8080
 ## --------------------------
 ## logdyの環境変数
 ## --------------------------
+# 参考: https://logdy.dev/docs/reference/cli#webserver-port
+# Logdy CLI で利用できる環境変数の例:
+#   LOGDY_APPEND_TO_FILE     : --append-to-file
+#   LOGDY_ROTATE_FILE_SIZE   : --rotate-file-size
+#   LOGDY_API_KEY            : --api-key
+#   LOGDY_PORT               : --port
+#   LOGDY_UI_IP              : --ui-ip
+#   LOGDY_UI_PASS            : --ui-pass
+#   LOGDY_CONFIG             : --config
+#   LOGDY_IP                 : --ip (forward/socket mode only)
+#
+# 例:
+#   logdy_envs:
+#     LOGDY_PORT: "8080"
+#     LOGDY_UI_IP: "127.0.0.1"
+#     LOGDY_UI_PASS: "secret"
+#     LOGDY_API_KEY: "xxxxxxxx"
+#
 logdy_envs: {}
 #   LOGDY_APPEND_TO_FILE:
 #   LOGDY_API_KEY:
 #   LOGDY_UI_IP: 127.0.0.1
 #   LOGDY_UI_PASS:
 #   LOGDY_ROTATE_FILE_SIZE:
+#   LOGDY_PORT: 8080
+#   LOGDY_CONFIG:
+#   LOGDY_IP:
+
+## --------------------------
+## Systemd の自動起動設定
+## --------------------------
+logdy_service_enabled: true
+logdy_service_state: started
+# 例: インストールだけして CLI で手動起動したい場合
+# logdy_service_enabled: false
+# logdy_service_state: stopped

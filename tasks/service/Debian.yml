@@ -15,8 +15,9 @@
 - name: Service logdy is active and enabled on system startup
   ansible.builtin.systemd_service:
     name: logdy
-    state: started
-    enabled: true
+    state: "{{ logdy_service_state }}"
+    enabled: "{{ logdy_service_enabled }}"
+    daemon_reload: true
 - name: Allow logdy port
   community.general.ufw:
     rule: allow
