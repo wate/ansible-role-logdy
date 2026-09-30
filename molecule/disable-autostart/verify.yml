@@ -68,6 +68,7 @@
           - ansible_facts.services['logdy.service'].status in ['disabled', 'static']
           - ansible_facts.services['logdy.service'].state in ['stopped', 'inactive', 'unknown']
 
-    # The goal of this scenario is to disable systemd auto-start, not to forbid manual startup.
-    # A service that is intentionally stopped here may still be launched later by hand, so the
-    # port-open assertion is intentionally not treated as a hard failure condition.
+    # Scenario intent:
+    # - systemd auto-start is disabled via logdy_service_enabled: false
+    # - the service is intentionally left stopped so it can be launched manually later
+    # - this is not the "default running service" scenario, so port-open assertions are not required.

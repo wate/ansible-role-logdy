@@ -3,5 +3,6 @@
 - name: Restart logdy
   ansible.builtin.systemd_service:
     name: logdy
-    state: restarted
+    state: "{{ 'restarted' if logdy_service_enabled and logdy_service_state == 'started' else 'stopped' }}"
+    enabled: "{{ logdy_service_enabled }}"
     daemon_reload: true
