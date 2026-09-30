@@ -12,14 +12,14 @@
     dest: /lib/systemd/system/logdy.service
     mode: "0644"
   notify: Restart logdy
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 - name: Service logdy is active and enabled on system startup
   ansible.builtin.systemd_service:
     name: logdy
     state: "{{ logdy_service_state }}"
     enabled: "{{ logdy_service_enabled }}"
     daemon_reload: true
-  when: ansible_service_mgr == 'systemd'
+  when: ansible_facts.service_mgr == 'systemd'
 - name: Allow logdy port
   community.general.ufw:
     rule: allow
