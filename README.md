@@ -34,6 +34,16 @@ Webポート
 
 logdyの環境変数
 
+#### `logdy_service_enabled`
+
+systemd の自動起動を有効にするかどうか
+
+#### `logdy_service_state`
+
+systemd の起動状態
+
+- 例: インストールだけして CLI から手動起動する場合は `false` / `stopped` を設定する
+
 ### [vars/main.yml](vars/main.yml)
 
 設定値については[vars/main.yml](vars/main.yml)を参照してください。

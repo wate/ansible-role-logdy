@@ -11,7 +11,13 @@ tasks:
     cmds:
       - molecule test
       - task: notify
+  disable-autostart:
+    desc: Run Molecule tests for the disable-autostart scenario
+    cmds:
+      - molecule test -s disable-autostart --destroy=always
+      - task: notify
   all:
     desc: Run Molecule tests for all scenarios (sequential)
     cmds:
       - task: default
+      - task: disable-autostart
