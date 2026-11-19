@@ -17,7 +17,7 @@
   tasks:
     - name: Include role with autostart disabled
       ansible.builtin.include_role:
-        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
       vars:
         logdy_service_enabled: false
         logdy_service_state: stopped
