@@ -52,14 +52,13 @@ provisioner:
 verifier:
   name: ansible
 scenario:
+  ## cleanupとside_effectはドライバにプレイブックが無いため実行しません
   test_sequence:
     - dependency
-    - cleanup
     - destroy
     - syntax
     - create
     - prepare
     - converge
     - verify
-    - cleanup
     - destroy
